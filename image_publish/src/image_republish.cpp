@@ -5,7 +5,6 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <image_transport/image_transport.h>
 #include <dynamic_reconfigure/server.h>
-#include <igr_detection/box_viewConfig.h>
 #include <algorithm>
 #include <math.h>
 
