@@ -11,7 +11,10 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 find_package(catkin REQUIRED COMPONENTS roscpp std_msgs nav_msgs actionlib tf move_base_msgs visualization_msgs
-	geometry_msgs tf cv_bridge)
+	geometry_msgs tf cv_bridge sensor_msgs image_transport)
+
+#find_package(catkin REQUIRED sensor_msgs image_transport)
+
 
 find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
