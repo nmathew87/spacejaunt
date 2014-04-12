@@ -58,17 +58,22 @@ public:
     cv::Stitcher stitcher = cv::Stitcher::createDefault(true);
     cv::Stitcher::Status status = stitcher.stitch(imgs, pano); 
     cv::imshow("stitched image", pano);
+    cv::imshow("left image", imgs[0]);
+    cv::imshow("right image", imgs[1]);
+    cv::waitKey(3);
   }
 
 
   ImageStitcher():it_(nh_)
   { 
-    up_image_sub = new ImageSubscriber(it_, "image_up", 1);
-    down_image_sub = new ImageSubscriber(it_, "image_down", 1);
+    up_image_sub = new ImageSubscriber(it_, "left/image_raw", 1);
+    down_image_sub = new ImageSubscriber(it_, "right/image_raw", 1);
     sync = new message_filters::Synchronizer<syncPolicy>(syncPolicy(10), *up_image_sub, *down_image_sub);
     sync->registerCallback(boost::bind(&ImageStitcher::imageCallback, this, _1, _2));
     imgs.resize(2);
     cv::namedWindow("stitched image", cv::WINDOW_AUTOSIZE );
+    cv::namedWindow("left image", cv::WINDOW_AUTOSIZE );
+    cv::namedWindow("right image", cv::WINDOW_AUTOSIZE );
   }
 
   ~ImageStitcher()
