@@ -1,0 +1,94 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <iostream>
+#include <sstream>
+
+// ROS
+#include <ros/ros.h>
+#include <image_transport/image_transport.h>
+#include <cv_bridge/cv_bridge.h>
+#include <sensor_msgs/image_encodings.h>
+#include <sensor_msgs/Image.h>
+#include <tf/transform_datatypes.h>
+#include <message_filters/subscriber.h>
+#include <message_filters/synchronizer.h>
+#include <message_filters/sync_policies/approximate_time.h>
+#include <image_transport/subscriber_filter.h>
+#include <opencv2/opencv.hpp>
+#include "opencv2/highgui/highgui.hpp"
+#include "opencv2/stitching/stitcher.hpp"    
+
+using namespace std;
+namespace enc = sensor_msgs::image_encodings;
+typedef image_transport::SubscriberFilter ImageSubscriber;
+typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::Image> syncPolicy;
+
+
+class ImageStitcher
+{
+private:
+  ros::NodeHandle nh_;
+  image_transport::ImageTransport it_;
+  ImageSubscriber* up_image_sub;
+  ImageSubscriber* down_image_sub;
+  message_filters::Synchronizer<syncPolicy>* sync;
+  cv::Mat pano;
+  std::vector<cv::Mat> imgs;
+
+public:
+  void imageCallback(const sensor_msgs::ImageConstPtr& up_ptr, 
+    const sensor_msgs::ImageConstPtr& down_ptr)
+  {
+    cv_bridge::CvImagePtr up_img_cvptr, down_img_cvptr;
+    try {
+      up_img_cvptr = cv_bridge::toCvCopy(up_ptr, sensor_msgs::image_encodings::BGR8);
+      down_img_cvptr = cv_bridge::toCvCopy(down_ptr, sensor_msgs::image_encodings::BGR8);
+    } 
+    catch (cv_bridge::Exception& e)
+    {
+      ROS_ERROR("cv_bridge exception: %s", e.what());
+      return;
+    }
+
+    imgs[0] = up_img_cvptr->image;
+    imgs[1] = down_img_cvptr->image;
+   
+    cv::Stitcher stitcher = cv::Stitcher::createDefault(true);
+    cv::Stitcher::Status status = stitcher.stitch(imgs, pano); 
+    cv::imshow("stitched image", pano);
+  }
+
+
+  ImageStitcher():it_(nh_)
+  { 
+    up_image_sub = new ImageSubscriber(it_, "image_up", 1);
+    down_image_sub = new ImageSubscriber(it_, "image_down", 1);
+    sync = new message_filters::Synchronizer<syncPolicy>(syncPolicy(10), *up_image_sub, *down_image_sub);
+    sync->registerCallback(boost::bind(&ImageStitcher::imageCallback, this, _1, _2));
+    imgs.resize(2);
+    cv::namedWindow("stitched image", cv::WINDOW_AUTOSIZE );
+  }
+
+  ~ImageStitcher()
+  {
+    delete up_image_sub;
+    delete down_image_sub;
+    delete sync;
+  }
+};
+
+int main(int argc, char** argv)
+{
+  // Initialize ROS
+  ros::init(argc, argv, "image_stitcher");
+
+  // Convert Image
+  ImageStitcher ic;
+  ros::spin();
+  return 0;
+}
+
+
+
