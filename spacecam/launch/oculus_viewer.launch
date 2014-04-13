@@ -1,0 +1,9 @@
+<launch>
+
+<node pkg="spacecam" type="control_roi" name="control_roi_oculus" output="screen"/>
+<node pkg="spacecam" type="publish_roi_center" name="publish_roi_center" output="screen"/>
+
+<node pkg="topic_tools" type="relay" name="left_relay" args="roi_out/compressed /camera/left/image_raw/compressed"/>
+<node pkg="topic_tools" type="relay" name="right_relay" args="roi_out/compressed /camera/right/image_raw/compressed"/>
+
+</launch>
