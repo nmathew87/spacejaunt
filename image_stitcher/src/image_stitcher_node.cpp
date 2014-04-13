@@ -59,14 +59,8 @@ public:
    
     cv::Stitcher stitcher = cv::Stitcher::createDefault(true);
     cv::Stitcher::Status status = stitcher.stitch(imgs, pano); 
-    //cv::imshow("stitched image", pano);
-    //cv::imshow("left image", imgs[0]);
-    //cv::imshow("right image", imgs[1]);
-    //cv::waitKey(3);
-    
     
     // publishing pano image
-    
     ros::Time time = ros::Time::now();
     cv_bridge::CvImage cvi;
     cvi.header.stamp = time;
@@ -77,9 +71,6 @@ public:
     sensor_msgs::Image im;
     cvi.toImageMsg(im);
     image_pub_.publish(im);
-    
-    
-    
   }
 
 
@@ -93,9 +84,6 @@ public:
     sync = new message_filters::Synchronizer<syncPolicy>(syncPolicy(10), *up_image_sub, *down_image_sub);
     sync->registerCallback(boost::bind(&ImageStitcher::imageCallback, this, _1, _2));
     imgs.resize(2);
-    cv::namedWindow("stitched image", cv::WINDOW_AUTOSIZE );
-    cv::namedWindow("left image", cv::WINDOW_AUTOSIZE );
-    cv::namedWindow("right image", cv::WINDOW_AUTOSIZE );
   }
 
   ~ImageStitcher()
@@ -116,6 +104,5 @@ int main(int argc, char** argv)
   ros::spin();
   return 0;
 }
-
 
 
