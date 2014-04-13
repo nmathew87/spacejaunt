@@ -9,7 +9,8 @@
 
 #include "spacecam/main.hpp"
 
-ros::Subscriber subscriber_img, subscriber_vp;
+ros::Subscriber subscriber_img, subscriber_vp, subscriber_gamepad;
+
 ros::Publisher publisher_roi, publisher_img;
 image_transport::Publisher image_pub_;
 image_transport::Subscriber image_sub_;
@@ -19,6 +20,8 @@ Point2f vp_center;
 Mat roi_final;  // roi of image being sent out
 Mat full_image; // image coming up from the subscription
 
+int localMapWidth = 640;
+int localMapHeight = 480;
 
 const char * VP_TOPIC_NAME = "/mapping/ekf/pose";
 
@@ -53,6 +56,39 @@ void imgCallback(const sensor_msgs::ImageConstPtr& msg) {
 }
 
 
+void gamepadCallback(const geometry_msgs::Twist& cmd_vel ) {
+  
+    // update position
+    
+    
+  double gamepad_x = cmd_vel.linear.x;
+  double gamepad_y = cmd_vel.linear.y;
+
+  vp_center.x = (full_image.rows / 2) * (1 + (gamepad_x/5));
+  vp_center.y = (full_image.cols/ 2) * (1 + (gamepad_y/5));
+  
+  
+  
+  //imshow( "Display window", roi_final ); 
+  
+  // generate roi
+  genROI(roi_final, full_image, vp_center);
+  
+  // publish message to ROS
+  ros::Time time = ros::Time::now();
+  cv_bridge::CvImage cvi;
+  cvi.header.stamp = time;
+  cvi.header.frame_id = "image";
+  cvi.encoding = "bgr8";
+  cvi.image = roi_final;
+
+  sensor_msgs::Image im;
+  cvi.toImageMsg(im);
+  image_pub_.publish(im);
+
+
+}
+
 void odoCallback( const geometry_msgs::Pose& point) {
 
   ROS_INFO( "Position received by odocallback : (%f, %f)", point.position.x, point.position.y);
@@ -84,9 +120,7 @@ void genROI(Mat &image_out, Mat &image_in, Point2f &roi_center) // pose will be 
 {
     Rect roiRect;
 
-	  int localMapWidth = 500;
-	  int localMapHeight = 300;
-    
+
     Point2f fov = Point2f(localMapWidth, localMapHeight);
     
 	  Point2f roi;
@@ -161,6 +195,7 @@ int main( int argc, char** argv )
       
     // setup publishers and subscribers  
     subscriber_vp  = n.subscribe("/viewpoint/pose", 1, odoCallback);
+    subscriber_gamepad = n.subscribe("/cmd_vel",1,gamepadCallback);
     
     image_sub_ = it_.subscribe("/target_image", 1, imgCallback);
     image_pub_ = it_.advertise("/roi_out", 1);
