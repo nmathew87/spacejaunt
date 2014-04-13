@@ -59,11 +59,6 @@ public:
    
     cv::Stitcher stitcher = cv::Stitcher::createDefault(true);
     cv::Stitcher::Status status = stitcher.stitch(imgs, pano); 
-    //cv::imshow("stitched image", pano);
-    //cv::imshow("left image", imgs[0]);
-    //cv::imshow("right image", imgs[1]);
-    //cv::waitKey(3);
-    
     
     // publishing pano image
     
