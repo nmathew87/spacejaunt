@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<launch>
+  <node pkg="image_stitcher" type="image_stitcher_node" name="stitcher">
+  </node>
+  <node pkg="image_view" type="image_view" name="stitched_image_viewer">
+    <param name="image" value="stitched_image"/>
+  </node>
+</launch>
