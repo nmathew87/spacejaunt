@@ -36,6 +36,8 @@ private:
   message_filters::Synchronizer<syncPolicy>* sync;
   cv::Mat pano;
   std::vector<cv::Mat> imgs;
+  
+  image_transport::Publisher image_pub_;
 
 public:
   void imageCallback(const sensor_msgs::ImageConstPtr& up_ptr, 
@@ -60,12 +62,32 @@ public:
     cv::imshow("stitched image", pano);
     cv::imshow("left image", imgs[0]);
     cv::imshow("right image", imgs[1]);
-    cv::waitKey(3);
+    //cv::waitKey(3);
+    
+    
+    // publishing pano image
+    
+    ros::Time time = ros::Time::now();
+    cv_bridge::CvImage cvi;
+    cvi.header.stamp = time;
+    cvi.header.frame_id = "image";
+    cvi.encoding = "bgr8";
+    cvi.image = pano;  // storing pano in cv image
+
+    sensor_msgs::Image im;
+    cvi.toImageMsg(im);
+    image_pub_.publish(im);
+    
+    
+    
   }
 
 
   ImageStitcher():it_(nh_)
   { 
+  
+    image_pub_ = it_.advertise("/stitched_image", 1);
+  
     up_image_sub = new ImageSubscriber(it_, "left/image_raw", 1);
     down_image_sub = new ImageSubscriber(it_, "right/image_raw", 1);
     sync = new message_filters::Synchronizer<syncPolicy>(syncPolicy(10), *up_image_sub, *down_image_sub);
