@@ -200,7 +200,7 @@ int main( int argc, char** argv )
     image_sub_ = it_.subscribe("/target_image", 1, imgCallback);
     image_pub_ = it_.advertise("/roi_out", 1);
    
-    
+    /*
     // Loading default image from command line.
     if( argc != 2)
     {
@@ -215,31 +215,34 @@ int main( int argc, char** argv )
         cout <<  "Could not open or find the image" << std::endl ;
         return -1;
     }
+    */
 
     // Loading Default ROI
-    vp_center.x = full_image.rows / 2.0;
-	  vp_center.y = full_image.cols / 2.0;
+    //vp_center.x = full_image.rows / 2.0;
+	  //vp_center.y = full_image.cols / 2.0;
     
     
     // genarate the first roi
-    genROI(roi_final, full_image, vp_center);
+    //genROI(roi_final, full_image, vp_center);
     
     
       // publish message to ROS
-    ros::Time time = ros::Time::now();
-    cv_bridge::CvImage cvi;
-    cvi.header.stamp = time;
-    cvi.header.frame_id = "image";
-    cvi.encoding = "bgr8";
-    cvi.image = roi_final;
+   // ros::Time time = ros::Time::now();
+  //  cv_bridge::CvImage cvi;
+  //  cvi.header.stamp = time;
+  //  cvi.header.frame_id = "image";
+  //  cvi.encoding = "bgr8";
+  //  cvi.image = roi_final;
 
-    sensor_msgs::Image im;
-    cvi.toImageMsg(im);
-    image_pub_.publish(im);
+  //  sensor_msgs::Image im;
+  //  cvi.toImageMsg(im);
+  //  image_pub_.publish(im);
 
     //namedWindow( "Display window", WINDOW_AUTOSIZE );// Create a window for display.
     //imshow( "Display window", roi_final );                   // Show our image inside it.
 
+    ROS_INFO("Waiting for image and pose");
+    
     ros::spin();
     
     //waitKey(0);                                          // Wait for a keystroke in the window
