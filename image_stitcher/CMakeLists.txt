@@ -11,7 +11,8 @@ find_package(catkin REQUIRED COMPONENTS
   image_transport
 )
 
-find_package(OpenCV)
+file(GLOB OpenCV_LIBRARIES /usr/local/lib/libopencv_*.so)
+set(GLOB OpenCV_INCLUDE_DIRS /usr/local/include)
 
 catkin_package(
   INCLUDE_DIRS
