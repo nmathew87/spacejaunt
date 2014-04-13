@@ -133,8 +133,11 @@ include_directories(
 #target_link_libraries(control_roi_lib ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})
 
 add_executable(control_roi src/control_roi.cpp)
+add_executable(publish_roi_center src/publish_roi_center.cpp)
 #target_link_libraries(control_roi control_roi_lib ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})
 target_link_libraries(control_roi ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})
+target_link_libraries(publish_roi_center ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})
+
 
 #############
 ## Install ##
