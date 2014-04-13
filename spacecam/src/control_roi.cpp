@@ -61,8 +61,8 @@ void gamepadCallback(const geometry_msgs::Twist& cmd_vel ) {
     // update position
     
     
-  double gamepad_x = cmd_vel.linear.x;
-  double gamepad_y = cmd_vel.linear.y;
+  double gamepad_x = cmd_vel.linear.y;
+  double gamepad_y = cmd_vel.linear.x;
 
   vp_center.x = (full_image.rows / 2) * (1 + (gamepad_x/5));
   vp_center.y = (full_image.cols/ 2) * (1 + (gamepad_y/5));
