@@ -22,8 +22,8 @@ void qt_Callback( const geometry_msgs::Quaternion& oculus_qt) {
   transform.setRotation(q_t);
   br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "world", "oculus"));
   
-  double x = (yaw/3.14159)*(full_image_width/2.0) + (full_image_width/2.0);
-  double y = (roll/3.14159)*(full_image_height/2.0) + (full_image_height/2.0);
+  double x = (-yaw/3.14159)*(full_image_width/2.0) + (full_image_width/2.0);
+  double y = (pitch/3.14159)*(full_image_height/2.0) + (full_image_height/2.0);
   double z = 0;
 
   double oc_pitch = roll;
