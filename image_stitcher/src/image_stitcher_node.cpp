@@ -31,6 +31,7 @@ class ImageStitcher
 private:
   ros::NodeHandle nh_;
   image_transport::ImageTransport it_;
+  image_transport::Publisher image_pub_;
   ImageSubscriber* left_image_sub;
   ImageSubscriber* right_image_sub;
   message_filters::Synchronizer<syncPolicy>* sync;
@@ -69,15 +70,24 @@ public:
     if(registered) {
       cv::Stitcher::Status status = stitcher.composePanorama(imgs, pano);
     }
-    cv::imshow("stitched image", pano);
-    cv::imshow("left image", imgs[0]);
-    cv::imshow("right image", imgs[1]);
-    cv::waitKey(3);
+    
+    // publishing pano image
+    ros::Time time = ros::Time::now();
+    cv_bridge::CvImage cvi;
+    cvi.header.stamp = time;
+    cvi.header.frame_id = "image";
+    cvi.encoding = "bgr8";
+    cvi.image = pano;  // storing pano in cv image
+
+    sensor_msgs::Image im;
+    cvi.toImageMsg(im);
+    image_pub_.publish(im);
   }
 
 
   ImageStitcher():it_(nh_)
   { 
+    image_pub_ = it_.advertise("/stitched_image", 1);
     left_image_sub = new ImageSubscriber(it_, "left/image_raw", 1);
     right_image_sub = new ImageSubscriber(it_, "right/image_raw", 1);
     sync = new message_filters::Synchronizer<syncPolicy>(syncPolicy(10), *left_image_sub, *right_image_sub);
@@ -107,6 +117,4 @@ int main(int argc, char** argv)
   ros::spin();
   return 0;
 }
-
-
 

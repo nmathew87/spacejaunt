@@ -11,7 +11,10 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 find_package(catkin REQUIRED COMPONENTS roscpp std_msgs nav_msgs actionlib tf move_base_msgs visualization_msgs
-	geometry_msgs tf cv_bridge)
+	geometry_msgs tf cv_bridge sensor_msgs image_transport)
+
+#find_package(catkin REQUIRED sensor_msgs image_transport)
+
 
 find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
@@ -130,8 +133,11 @@ include_directories(
 #target_link_libraries(control_roi_lib ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})
 
 add_executable(control_roi src/control_roi.cpp)
+add_executable(publish_roi_center src/publish_roi_center.cpp)
 #target_link_libraries(control_roi control_roi_lib ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})
 target_link_libraries(control_roi ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})
+target_link_libraries(publish_roi_center ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})
+
 
 #############
 ## Install ##

@@ -14,14 +14,14 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(OpenCV)
 
 catkin_package(
-  INCLUDE_DIRS include
+  INCLUDE_DIRS
 )
 
 ###########
 ## Build ##
 ###########
 include_directories(
-  include
+  #  include
   ${catkin_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
 )
