@@ -31,20 +31,21 @@ class ImageStitcher
 private:
   ros::NodeHandle nh_;
   image_transport::ImageTransport it_;
-  ImageSubscriber* up_image_sub;
-  ImageSubscriber* down_image_sub;
+  ImageSubscriber* left_image_sub;
+  ImageSubscriber* right_image_sub;
   message_filters::Synchronizer<syncPolicy>* sync;
   cv::Mat pano;
   std::vector<cv::Mat> imgs;
+  bool registered;
 
 public:
-  void imageCallback(const sensor_msgs::ImageConstPtr& up_ptr, 
-    const sensor_msgs::ImageConstPtr& down_ptr)
+  void imageCallback(const sensor_msgs::ImageConstPtr& left_ptr, 
+    const sensor_msgs::ImageConstPtr& right_ptr)
   {
-    cv_bridge::CvImagePtr up_img_cvptr, down_img_cvptr;
+    cv_bridge::CvImagePtr left_img_cvptr, right_img_cvptr;
     try {
-      up_img_cvptr = cv_bridge::toCvCopy(up_ptr, sensor_msgs::image_encodings::BGR8);
-      down_img_cvptr = cv_bridge::toCvCopy(down_ptr, sensor_msgs::image_encodings::BGR8);
+      left_img_cvptr = cv_bridge::toCvCopy(left_ptr, sensor_msgs::image_encodings::BGR8);
+      right_img_cvptr = cv_bridge::toCvCopy(right_ptr, sensor_msgs::image_encodings::BGR8);
     } 
     catch (cv_bridge::Exception& e)
     {
@@ -52,11 +53,22 @@ public:
       return;
     }
 
-    imgs[0] = up_img_cvptr->image;
-    imgs[1] = down_img_cvptr->image;
+    imgs[0] = left_img_cvptr->image;
+    imgs[1] = right_img_cvptr->image;
    
-    cv::Stitcher stitcher = cv::Stitcher::createDefault(true);
-    cv::Stitcher::Status status = stitcher.stitch(imgs, pano); 
+    static cv::Stitcher stitcher = cv::Stitcher::createDefault(true);
+    
+    if(!registered)
+    {
+      cv::Stitcher::Status status = stitcher.estimateTransform(imgs); 
+      if(status == cv::Stitcher::OK) {
+        registered = true;
+      }
+    }
+
+    if(registered) {
+      cv::Stitcher::Status status = stitcher.composePanorama(imgs, pano);
+    }
     cv::imshow("stitched image", pano);
     cv::imshow("left image", imgs[0]);
     cv::imshow("right image", imgs[1]);
@@ -66,20 +78,21 @@ public:
 
   ImageStitcher():it_(nh_)
   { 
-    up_image_sub = new ImageSubscriber(it_, "left/image_raw", 1);
-    down_image_sub = new ImageSubscriber(it_, "right/image_raw", 1);
-    sync = new message_filters::Synchronizer<syncPolicy>(syncPolicy(10), *up_image_sub, *down_image_sub);
+    left_image_sub = new ImageSubscriber(it_, "left/image_raw", 1);
+    right_image_sub = new ImageSubscriber(it_, "right/image_raw", 1);
+    sync = new message_filters::Synchronizer<syncPolicy>(syncPolicy(10), *left_image_sub, *right_image_sub);
     sync->registerCallback(boost::bind(&ImageStitcher::imageCallback, this, _1, _2));
     imgs.resize(2);
     cv::namedWindow("stitched image", cv::WINDOW_AUTOSIZE );
     cv::namedWindow("left image", cv::WINDOW_AUTOSIZE );
     cv::namedWindow("right image", cv::WINDOW_AUTOSIZE );
+    registered = false;
   }
 
   ~ImageStitcher()
   {
-    delete up_image_sub;
-    delete down_image_sub;
+    delete left_image_sub;
+    delete right_image_sub;
     delete sync;
   }
 };
