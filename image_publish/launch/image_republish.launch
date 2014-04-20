@@ -1,5 +1,5 @@
 <launch>
   <node pkg="image_publish" type="image_republish" name="image_republish" output="screen">
-    <param name="filename" value="$(find image_publish)/images/earth_from_iss.jpg"/>
+    <param name="filename" value="$(find image_publish)/images/astronaut.jpg"/>
   </node> 
 </launch>
